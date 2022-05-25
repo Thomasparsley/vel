@@ -63,7 +63,7 @@ func (ws *WsHub) AddClient(c WsClient) {
 	ws.rooms[c.room]++
 }
 
-func (ws WsHub) ExistsClient(c *websocket.Conn) bool {
+func (ws WsHub) HasClient(c *websocket.Conn) bool {
 	_, ok := ws.clients[c]
 	return ok
 }
