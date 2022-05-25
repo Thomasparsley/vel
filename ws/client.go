@@ -35,3 +35,7 @@ func (c Client) SendBytes(data []byte) error {
 func (c Client) SendString(data string) error {
 	return c.SendBytes([]byte(data))
 }
+
+func (c Client) SendJSON(json any) error {
+	return c.connection.WriteJSON(json)
+}

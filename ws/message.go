@@ -1,12 +1,14 @@
 package ws
 
+import "encoding/json"
+
 type Message struct {
-	data  string
+	data  []byte
 	room  string
 	extra map[string]bool
 }
 
-func NewMessage(data string, room string) Message {
+func NewMessage(data []byte, room string) Message {
 	return Message{
 		data:  data,
 		room:  room,
@@ -14,8 +16,22 @@ func NewMessage(data string, room string) Message {
 	}
 }
 
-func (m Message) Data() string {
+func NewStringMessage(data string, room string) Message {
+	return NewMessage([]byte(data), room)
+}
+
+func NewJsonMessage(data any, room string) Message {
+	jsonBytes, _ := json.Marshal(data)
+
+	return NewMessage(jsonBytes, room)
+}
+
+func (m Message) Data() []byte {
 	return m.data
+}
+
+func (m Message) DataString() string {
+	return string(m.data)
 }
 
 func (m Message) Room() string {
