@@ -32,6 +32,10 @@ func (c Client) SendBytes(data []byte) error {
 	return c.connection.WriteMessage(websocket.TextMessage, data)
 }
 
+func (c Client) SendMessage(message Message) error {
+	return c.SendBytes(message.Data())
+}
+
 func (c Client) SendString(data string) error {
 	return c.SendBytes([]byte(data))
 }
