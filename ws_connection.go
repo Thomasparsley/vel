@@ -2,16 +2,20 @@ package vel
 
 import "github.com/gofiber/websocket/v2"
 
-type WsConnection struct {
+type WsClient struct {
 	connection *websocket.Conn
 	sended     map[string]bool
 	room       string
 }
 
-func NewWsConnection(c *websocket.Conn, room string) WsConnection {
-	return WsConnection{
+func NewWsClient(c *websocket.Conn, room string) WsClient {
+	return WsClient{
 		connection: c,
 		sended:     make(map[string]bool),
 		room:       room,
 	}
+}
+
+func (c WsClient) SendString(data string) error {
+	return c.connection.WriteMessage(websocket.TextMessage, []byte(data))
 }
