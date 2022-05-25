@@ -26,8 +26,8 @@ func (m *WsMessage) SetRoom(room string) {
 	m.room = room
 }
 
-func (m WsMessage) Extra() map[string]bool {
-	return m.extra
+func (m WsMessage) Extra(key string) bool {
+	return m.extra[key]
 }
 
 func (m *WsMessage) SetExtra(key string, value bool) {
