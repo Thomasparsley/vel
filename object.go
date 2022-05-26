@@ -71,11 +71,8 @@ func (o *Object[O]) Exists() bool {
 	var data O
 
 	o.query.First(&data)
-	if data.PK() == 0 {
-		return false
-	}
 
-	return true
+	return data.PK() != 0
 }
 
 func (o *Object[O]) Count() int64 {
