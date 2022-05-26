@@ -1,10 +1,10 @@
 package converter
 
-import "encoding/json"
+import "github.com/bytedance/sonic"
 
 // ToJsonBytes convert the input to a valid JSON array bytes.
 func ToJsonBytes(input any) ([]byte, error) {
-	bytes, err := json.Marshal(input)
+	bytes, err := sonic.Marshal(input)
 	if err != nil {
 		return []byte{}, err
 	}
