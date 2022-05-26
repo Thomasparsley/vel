@@ -1,6 +1,8 @@
 package ws
 
-import "encoding/json"
+import (
+	"github.com/Thomasparsley/vel/converter"
+)
 
 type Message struct {
 	data  []byte
@@ -21,9 +23,9 @@ func NewStringMessage(data string, room string) Message {
 }
 
 func NewJsonMessage(data any, room string) Message {
-	jsonBytes, _ := json.Marshal(data)
+	bytes, _ := converter.ToJsonBytes(data)
 
-	return NewMessage(jsonBytes, room)
+	return NewMessage(bytes, room)
 }
 
 func (m Message) Data() []byte {
