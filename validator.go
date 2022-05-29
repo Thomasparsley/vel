@@ -10,7 +10,7 @@ type ValidationErrors map[string]string
 type ValidatorFunc[T any] func(T) (bool, string)
 
 // Collection validates collection.
-func Collection()
+//func Collection()
 
 // Each run all validators on given value. It is in conjunction form.
 func Each[T any](item T, callbacks ...ValidatorFunc[T]) (bool, string) {
