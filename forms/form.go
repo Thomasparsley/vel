@@ -1,12 +1,14 @@
-package vel
+package forms
+
+import "github.com/Thomasparsley/vel/validation"
 
 type FormDefinition interface {
-	Validate() ValidationErrors
+	Validate() validation.ValidationErrors
 }
 
 type Form[F FormDefinition] struct {
 	fields F
-	errors ValidationErrors
+	errors validation.ValidationErrors
 }
 
 func NewForm[F FormDefinition](form F) Form[F] {
@@ -25,7 +27,7 @@ func (f Form[F]) Fields() F {
 	return f.fields
 }
 
-func (f Form[F]) Errors() ValidationErrors {
+func (f Form[F]) Errors() validation.ValidationErrors {
 	return f.errors
 }
 
