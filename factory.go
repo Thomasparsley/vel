@@ -5,7 +5,7 @@ import (
 	"github.com/gofiber/template/jet"
 )
 
-type VelFactory struct {
+type Factory struct {
 	views   fiber.Views
 	modules []Module
 }
@@ -23,22 +23,22 @@ func a() {
 	app.Use()
 }
 
-func NewFactory() *VelFactory {
-	return &VelFactory{
+func NewFactory() *Factory {
+	return &Factory{
 		views:   nil,
 		modules: make([]Module, 0),
 	}
 }
 
-func (factory *VelFactory) AddModule(module Module) {
+func (factory *Factory) AddModule(module Module) {
 	factory.modules = append(factory.modules, module)
 }
 
-func (factory *VelFactory) SetViewEngine(views fiber.Views) {
+func (factory *Factory) SetViewEngine(views fiber.Views) {
 	factory.views = views
 }
 
-func (factory VelFactory) CreateApp() *fiber.App {
+func (factory Factory) CreateApp() *fiber.App {
 	config := fiber.Config{}
 
 	if factory.views != nil {
