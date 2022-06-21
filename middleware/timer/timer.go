@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/Thomasparsley/vel"
 )
 
-func New() fiber.Handler {
-	return func(c *fiber.Ctx) error {
+func New() vel.Handler {
+	return func(c *vel.Ctx) error {
 		start := time.Now()
 
 		err := c.Next()

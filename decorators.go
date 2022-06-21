@@ -1,45 +1,63 @@
 package vel
 
-import (
-	"github.com/gofiber/fiber/v2"
-)
+func requestDataParser[T any](parser func(out any) error) (T, error) {
+	var data T
 
-// Parse body and store to locals
-func Body[B any]() func(request *fiber.Ctx) error {
-	return func(c *fiber.Ctx) error {
-		var body B
-
-		if err := c.BodyParser(body); err != nil {
-			return err
-		}
-
-		c.Locals("body", body)
-		return c.Next()
+	err := parser(data)
+	if err != nil {
+		return data, err
 	}
+
+	return data, nil
 }
 
 // Parse query and store to locals
-func Query[Q any]() func(request *fiber.Ctx) error {
-	return func(c *fiber.Ctx) error {
-		var query Q
-
-		if err := c.QueryParser(query); err != nil {
+func Query[Q any]() func(ctx *Ctx) error {
+	return func(ctx *Ctx) error {
+		query, err := requestDataParser[Q](ctx.QueryParser)
+		if err != nil {
 			return err
 		}
 
-		c.Locals("query", query)
-		return c.Next()
+		ctx.Locals("query", query)
+		return ctx.Next()
 	}
 }
 
-func Redirect(location string, status ...int) func(request *fiber.Ctx) error {
-	return func(c *fiber.Ctx) error {
-		err := c.Next()
+// Parse body and store to locals
+func Body[B any]() func(ctx *Ctx) error {
+	return func(ctx *Ctx) error {
+		body, err := requestDataParser[B](ctx.BodyParser)
+		if err != nil {
+			return err
+		}
+
+		ctx.Locals("body", body)
+		return ctx.Next()
+	}
+}
+
+// Parse params and store to locals
+func Params[P any]() func(ctx *Ctx) error {
+	return func(ctx *Ctx) error {
+		params, err := requestDataParser[P](ctx.ParamsParser)
+		if err != nil {
+			return err
+		}
+
+		ctx.Locals("params", params)
+		return ctx.Next()
+	}
+}
+
+func Redirect(location string, status ...int) func(ctx *Ctx) error {
+	return func(ctx *Ctx) error {
+		err := ctx.Next()
 
 		if err != nil {
 			return err
 		}
 
-		return c.Redirect(location, status...)
+		return ctx.Redirect(location, status...)
 	}
 }

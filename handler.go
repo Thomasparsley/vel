@@ -1,6 +1,8 @@
 package vel
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+)
 
 type Handler func(ctx *Ctx) error
 

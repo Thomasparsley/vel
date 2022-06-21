@@ -1,36 +1,42 @@
 package forms
 
-import "github.com/Thomasparsley/vel/validation"
+import (
+	"github.com/gofiber/fiber/v2"
+
+	"github.com/Thomasparsley/vel/validation"
+)
 
 type FormDefinition interface {
-	Validate() validation.ValidationErrors
+	Validate() validation.Errors
 }
 
-type Form[F FormDefinition] struct {
-	fields F
-	errors validation.ValidationErrors
+type Form[T FormDefinition] struct {
+	Fields T
+	errors validation.Errors
 }
 
-func NewForm[F FormDefinition](form F) Form[F] {
-	return Form[F]{
-		fields: form,
+func NewForm[T FormDefinition]() Form[T] {
+	var fields T
+
+	return Form[T]{
+		Fields: fields,
+		errors: validation.Errors{},
 	}
 }
 
-func (f Form[F]) IsValid() bool {
-	f.errors = f.fields.Validate()
+// TODO
+func (f Form[F]) BindStruct() Form[F] {
+	return f
+}
+
+func (f Form[F]) BindRequest(request *fiber.Ctx) Form[F] {
+	request.BodyParser(&f.Fields)
+
+	return f
+}
+
+func (f *Form[F]) IsValid() bool {
+	f.errors = f.Fields.Validate()
 
 	return len(f.errors) == 0
-}
-
-func (f Form[F]) Fields() F {
-	return f.fields
-}
-
-func (f Form[F]) Errors() validation.ValidationErrors {
-	return f.errors
-}
-
-func (f *Form[F]) AddError(key string, message string) {
-	f.errors[key] = message
 }
