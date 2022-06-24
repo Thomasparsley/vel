@@ -6,7 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gorilla/schema"
 
-	"github.com/Thomasparsley/vel/modules/user"
+	"github.com/Thomasparsley/vel/modules/identity"
 )
 
 var decoder = schema.NewDecoder()
@@ -46,11 +46,11 @@ func (ctx Ctx) RenderToString(name string, bind any, layouts ...string) (string,
 	return RenderToString(ctx.App(), name, bind, layouts...)
 }
 
-func (ctx Ctx) GetLocalUser() *user.User {
+func (ctx Ctx) GetLocalUser() *identity.User {
 	u := ctx.Locals("user")
 	if u == nil {
 		return nil
 	}
 
-	return u.(*user.User)
+	return u.(*identity.User)
 }

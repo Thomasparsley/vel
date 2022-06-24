@@ -1,6 +1,6 @@
 package vel
 
-import "github.com/Thomasparsley/vel/modules/user"
+import "github.com/Thomasparsley/vel/modules/identity"
 
 func requestDataParser[T any](parser func(out any) error) (T, error) {
 	var data T
@@ -91,7 +91,7 @@ func AdminRequired() Handler {
 	}
 }
 
-func RoleRequired(name user.RoleName) Handler {
+func RoleRequired(name identity.RoleName) Handler {
 	return func(ctx *Ctx) error {
 		err := AuthenticationRequired()(ctx)
 		if err != nil {
@@ -107,7 +107,7 @@ func RoleRequired(name user.RoleName) Handler {
 	}
 }
 
-func PermissionRequired(name user.PermissionName, permissions user.Permissions) Handler {
+func PermissionRequired(name identity.PermissionName, permissions identity.Permissions) Handler {
 	return func(ctx *Ctx) error {
 		err := AuthenticationRequired()(ctx)
 		if err != nil {

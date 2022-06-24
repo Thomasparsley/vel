@@ -10,6 +10,8 @@ require (
 	gorm.io/gorm v1.23.6
 )
 
+require github.com/gosimple/unidecode v1.0.1 // indirect
+
 require (
 	github.com/CloudyKit/fastprinter v0.0.0-20200109182630-33d98a066a53 // indirect
 	github.com/CloudyKit/jet/v6 v6.1.0 // indirect
@@ -19,6 +21,7 @@ require (
 	github.com/fasthttp/websocket v1.5.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/gorilla/schema v1.2.0 // indirect
+	github.com/gosimple/slug v1.12.0
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/klauspost/compress v1.15.6 // indirect

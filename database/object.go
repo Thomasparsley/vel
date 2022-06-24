@@ -1,6 +1,9 @@
 package database
 
-import "gorm.io/gorm"
+import (
+	"github.com/Thomasparsley/vel/optional"
+	"gorm.io/gorm"
+)
 
 type ComperableID interface {
 	string | uint64
@@ -42,25 +45,16 @@ func (o Object[ID, O]) Preload(query string, args ...interface{}) Object[ID, O] 
 }
 
 // First find first record that match given conditions, order by primary key
-func (o Object[ID, O]) First() *O {
+func (o Object[ID, O]) First() optional.Optional[O] {
 	var data O
 	var zeroValueID ID
 
 	o.query.First(&data)
 	if data.PK() == zeroValueID {
-		return nil
+		return optional.None[O]()
 	}
 
-	return &data
-}
-
-// FirstOrCreate gets the first matched record or create a new one with given conditions (only works with struct, map conditions)
-func (o Object[ID, O]) FirstOrCreate() *O {
-	var data O
-
-	o.query.FirstOrCreate(&data)
-
-	return &data
+	return optional.Some(data)
 }
 
 // Find find records that match given conditions
@@ -72,6 +66,7 @@ func (o Object[ID, O]) Find() []O {
 	return data
 }
 
+// Exists is predecate for object existence
 func (o Object[ID, O]) Exists() bool {
 	var data O
 	var zeroValueID ID
@@ -86,5 +81,24 @@ func (o Object[ID, O]) Count() int64 {
 
 	o.query.Count(&data)
 
+	return data
+}
+
+// Create insert the value into database
+func (o Object[ID, O]) Create(data O) O {
+	o.query.Create(&data)
+	return data
+}
+
+// FirstOrCreate gets the first matched record or create a new one with given conditions (only works with struct, map conditions)
+func (o Object[ID, O]) FirstOrCreate(data O) optional.Optional[O] {
+	o.query.FirstOrCreate(&data)
+
+	return optional.Some(data)
+}
+
+// Save update value in database, if the value doesn't have primary key, will insert it
+func (o Object[ID, O]) Save(data O) O {
+	o.query.Save(&data)
 	return data
 }

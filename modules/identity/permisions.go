@@ -1,4 +1,4 @@
-package user
+package identity
 
 type PermissionValue bool
 type PermissionName string
