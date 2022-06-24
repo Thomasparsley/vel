@@ -12,24 +12,24 @@ func Some[T any](value T) Optional[T] {
 	}
 }
 
-func None() Optional[any] {
-	return Optional[any]{
+func None[T any]() Optional[T] {
+	return Optional[T]{
 		isSet: false,
 	}
 }
 
 func (o Optional[T]) Value() T {
+	if o.IsNone() {
+		panic("cannot get value from option, is not set")
+	}
+
 	return o.value
 }
 
-func (o Optional[T]) IsSet() bool {
+func (o Optional[T]) IsSome() bool {
 	return o.isSet
 }
 
-func IsSome[T any](o Optional[T]) bool {
-	return o.isSet
-}
-
-func IsNone[T any](o Optional[T]) bool {
-	return !IsSome(o)
+func (o Optional[T]) IsNone() bool {
+	return !o.IsSome()
 }

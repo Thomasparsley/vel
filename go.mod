@@ -17,6 +17,7 @@ require (
 	github.com/bytedance/sonic v1.3.1 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20220526154910-8bf9453eb81a // indirect
 	github.com/fasthttp/websocket v1.5.0 // indirect
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/gorilla/schema v1.2.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect

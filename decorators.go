@@ -1,5 +1,7 @@
 package vel
 
+import "github.com/Thomasparsley/vel/modules/user"
+
 func requestDataParser[T any](parser func(out any) error) (T, error) {
 	var data T
 
@@ -12,7 +14,7 @@ func requestDataParser[T any](parser func(out any) error) (T, error) {
 }
 
 // Parse query and store to locals
-func Query[Q any]() func(ctx *Ctx) error {
+func Query[Q any]() Handler {
 	return func(ctx *Ctx) error {
 		query, err := requestDataParser[Q](ctx.QueryParser)
 		if err != nil {
@@ -25,7 +27,7 @@ func Query[Q any]() func(ctx *Ctx) error {
 }
 
 // Parse body and store to locals
-func Body[B any]() func(ctx *Ctx) error {
+func Body[B any]() Handler {
 	return func(ctx *Ctx) error {
 		body, err := requestDataParser[B](ctx.BodyParser)
 		if err != nil {
@@ -38,7 +40,7 @@ func Body[B any]() func(ctx *Ctx) error {
 }
 
 // Parse params and store to locals
-func Params[P any]() func(ctx *Ctx) error {
+func Params[P any]() Handler {
 	return func(ctx *Ctx) error {
 		params, err := requestDataParser[P](ctx.ParamsParser)
 		if err != nil {
@@ -50,7 +52,7 @@ func Params[P any]() func(ctx *Ctx) error {
 	}
 }
 
-func Redirect(location string, status ...int) func(ctx *Ctx) error {
+func Redirect(location string, status ...int) Handler {
 	return func(ctx *Ctx) error {
 		err := ctx.Next()
 
@@ -59,5 +61,64 @@ func Redirect(location string, status ...int) func(ctx *Ctx) error {
 		}
 
 		return ctx.Redirect(location, status...)
+	}
+}
+
+func AuthenticationRequired() Handler {
+	return func(ctx *Ctx) error {
+		user := ctx.GetLocalUser()
+		if user == nil {
+			return nil // TODO: return error
+		}
+
+		return ctx.Next()
+	}
+}
+
+func AdminRequired() Handler {
+	return func(ctx *Ctx) error {
+		err := AuthenticationRequired()(ctx)
+		if err != nil {
+			return err
+		}
+
+		user := ctx.GetLocalUser()
+		if !user.IsAdmin() {
+			return nil // TODO: Return error
+		}
+
+		return ctx.Next()
+	}
+}
+
+func RoleRequired(name user.RoleName) Handler {
+	return func(ctx *Ctx) error {
+		err := AuthenticationRequired()(ctx)
+		if err != nil {
+			return err
+		}
+
+		user := ctx.GetLocalUser()
+		if !user.HasRole(name) {
+			return nil // TODO: Return error
+		}
+
+		return ctx.Next()
+	}
+}
+
+func PermissionRequired(name user.PermissionName, permissions user.Permissions) Handler {
+	return func(ctx *Ctx) error {
+		err := AuthenticationRequired()(ctx)
+		if err != nil {
+			return err
+		}
+
+		user := ctx.GetLocalUser()
+		if !user.HasPermissions(name, permissions) {
+			return nil // TODO: Return error
+		}
+
+		return ctx.Next()
 	}
 }
