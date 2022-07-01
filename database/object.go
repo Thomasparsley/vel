@@ -1,8 +1,9 @@
 package database
 
 import (
-	"github.com/Thomasparsley/vel/optional"
 	"gorm.io/gorm"
+
+	"github.com/Thomasparsley/vel/structs/optional"
 )
 
 type ComperableID interface {
