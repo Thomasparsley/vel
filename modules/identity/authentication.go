@@ -27,7 +27,7 @@ func (auth Authentication) Verify(tokenToVerify string) {
 	token, err := jwt.Parse(tokenToVerify, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf(
-				"Unexpected signing method: %v", t.Header["alg"])
+				"unexpected signing method: %v", t.Header["alg"])
 		}
 
 		return auth.token, nil

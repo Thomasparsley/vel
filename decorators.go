@@ -115,7 +115,7 @@ func PermissionRequired(name identity.PermissionName, permissions identity.Permi
 		}
 
 		user := ctx.GetLocalUser()
-		if !user.HasPermissions(name, permissions) {
+		if !user.HasPermission(name, permissions) {
 			return nil // TODO: Return error
 		}
 

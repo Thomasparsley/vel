@@ -5,8 +5,12 @@ import (
 )
 
 const (
-	TableName_Users = "users"
+	TableName_Users = "velusers"
 )
+
+type UserRef struct {
+	types.UintID[User]
+}
 
 type User struct {
 	types.UintID[User]
@@ -36,7 +40,7 @@ func (u User) HasRole(name RoleName) bool {
 	return u.RoleName() == name
 }
 
-func (u User) HasPermissions(name PermissionName, permissions Permissions) bool {
+func (u User) HasPermission(name PermissionName, permissions Permissions) bool {
 	if u.IsAdmin() {
 		return true
 	}
