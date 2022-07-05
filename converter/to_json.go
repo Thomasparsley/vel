@@ -21,3 +21,8 @@ func ToJson(input any) (string, error) {
 
 	return string(bytes), err
 }
+
+// FromJson conver JsonBytes to input type
+func FromJson(bytes []byte, v any) error {
+	return sonic.Unmarshal(bytes, v)
+}

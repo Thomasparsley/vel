@@ -1,12 +1,9 @@
-package database
+package types
 
 import (
 	"errors"
 
 	"gorm.io/gorm"
-
-	"github.com/Thomasparsley/vel/structs/optional"
-	"github.com/Thomasparsley/vel/structs/result"
 )
 
 type ComperableID interface {
@@ -49,83 +46,83 @@ func (o Object[ID, O]) Preload(query string, args ...interface{}) Object[ID, O] 
 }
 
 // First find first record that match given conditions, order by primary key
-func (o Object[ID, O]) First() result.Result[optional.Optional[O]] {
+func (o Object[ID, O]) First() (Optional[O], error) {
 	var data O
 
 	response := o.query.First(&data)
 	if response.Error != nil {
 		if errors.Is(response.Error, gorm.ErrRecordNotFound) {
-			return result.Ok(optional.None[O]())
+			return None[O](), nil
 		}
 
-		return result.Error[optional.Optional[O]](response.Error)
+		return None[O](), response.Error
 	}
 
-	return result.Ok(optional.Some(data))
+	return Some(data), nil
 }
 
 // Find find records that match given conditions
-func (o Object[ID, O]) Find() result.Result[[]O] {
+func (o Object[ID, O]) Find() ([]O, error) {
 	var data []O
 
 	response := o.query.Find(&data)
 	if response.Error != nil {
-		return result.Error[[]O](response.Error)
+		return data, response.Error
 	}
 
-	return result.Ok(data)
+	return data, nil
 }
 
 // Exists is predecate for object existence
-func (o Object[ID, O]) Exists() result.Result[bool] {
+func (o Object[ID, O]) Exists() (bool, error) {
 	var data O
 	var zeroValueID ID
 
 	response := o.query.First(&data)
 	if response.Error != nil {
-		return result.Error[bool](response.Error)
+		return false, response.Error
 	}
 
-	return result.Ok(data.PK() != zeroValueID)
+	return data.PK() != zeroValueID, nil
 }
 
-func (o Object[ID, O]) Count() result.Result[int64] {
+func (o Object[ID, O]) Count() (int64, error) {
 	var data int64
 
 	response := o.query.Count(&data)
 	if response.Error != nil {
-		return result.Error[int64](response.Error)
+		return 0, response.Error
 	}
 
-	return result.Ok(data)
+	return data, nil
 }
 
 // Create insert the value into database
-func (o Object[ID, O]) Create(data O) result.Result[O] {
+func (o Object[ID, O]) Create(data O) (O, error) {
 	response := o.query.Create(&data)
 	if response.Error != nil {
-		return result.Error[O](response.Error)
+		return data, response.Error
 	}
 
-	return result.Ok(data)
+	return data, nil
 }
 
 // FirstOrCreate gets the first matched record or create a new one with given conditions (only works with struct, map conditions)
-func (o Object[ID, O]) FirstOrCreate(data O) result.Result[optional.Optional[O]] {
+func (o Object[ID, O]) FirstOrCreate(data O) (Optional[O], error) {
 	response := o.query.FirstOrCreate(&data)
 	if response.Error != nil {
-		return result.Error[optional.Optional[O]](response.Error)
+		return None[O](), response.Error
 	}
 
-	return result.Ok(optional.Some(data))
+	return Some(data), nil
 }
 
 // Save update value in database, if the value doesn't have primary key, will insert it
-func (o Object[ID, O]) Save(data O) result.Result[O] {
+func (o Object[ID, O]) Save(data O) (O, error) {
 	response := o.query.Save(&data)
 	if response.Error != nil {
-		return result.Error[O](response.Error)
+		return data, response.Error
 	}
 
-	return result.Ok(data)
+	return data, nil
 }
