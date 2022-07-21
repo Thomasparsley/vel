@@ -17,6 +17,7 @@ type Livereload struct {
 	watcher   *fsnotify.Watcher
 	directory string
 	done      chan bool
+	hub       *ws.Hub
 }
 
 func New(directory string) (*Livereload, error) {
@@ -26,6 +27,7 @@ func New(directory string) (*Livereload, error) {
 		watcher:   watcherm,
 		directory: directory,
 		done:      make(chan bool),
+		hub:       ws.NewHub(),
 	}, err
 }
 
@@ -42,22 +44,22 @@ func (l *Livereload) Watch() error {
 		return nil
 	})
 
-	go l.hub(ws.NewHub())
+	go l.hubHandler()
 
 	return err
 }
 
-func (l *Livereload) hub(hub *ws.Hub) {
+func (l *Livereload) hubHandler() {
 	for {
 		select {
 		// Register new client
-		case client := <-hub.ChanRegister():
-			hub.AddClient(client)
+		case client := <-l.hub.ChanRegister():
+			l.hub.AddClient(client)
 
 		// Unregister client
-		case connection := <-hub.ChanUnregister():
-			if has := hub.HasClient(connection); has {
-				hub.RemoveClient(connection)
+		case connection := <-l.hub.ChanUnregister():
+			if has := l.hub.HasClient(connection); has {
+				l.hub.RemoveClient(connection)
 			}
 
 		case event, ok := <-l.watcher.Events:
@@ -68,8 +70,8 @@ func (l *Livereload) hub(hub *ws.Hub) {
 			if event.Op&fsnotify.Write == fsnotify.Write {
 				log.Println("modified file:", event.Name)
 
-				hub.SendBroadcast(ws.NewJsonMessage(
-					map[string]any{
+				l.hub.SendBroadcast(ws.NewJsonMessage(
+					fiber.Map{
 						"command": "reload",
 						"time":    time.Now().Format(time.RFC3339),
 					},
@@ -90,26 +92,17 @@ func (l *Livereload) hub(hub *ws.Hub) {
 	}
 }
 
-func (l *Livereload) HttpControlLer(app *fiber.App, path string) {
-	hub := ws.NewHub()
+func (l *Livereload) HttpController(app *fiber.App, path string) {
 
-	app.Use(path, func(c *fiber.Ctx) error {
-		// Returns true if the client requested upgrade to the WebSocket protocol
-		if websocket.IsWebSocketUpgrade(c) {
-			return c.Next()
-		}
-
-		return c.SendStatus(fiber.StatusUpgradeRequired)
-	})
-
+	app.Use(path, ws.AutoUpgrade)
 	app.Get(path, websocket.New(func(c *websocket.Conn) {
 		defer func() {
-			hub.SendUnregister(c)
+			l.hub.SendUnregister(c)
 			c.Close()
 		}()
 
 		client := ws.NewClient(c, "*")
-		hub.SendRegister(client)
+		l.hub.SendRegister(client)
 
 		for {
 			err := client.SendJSON(map[string]any{

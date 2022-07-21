@@ -10,13 +10,13 @@ const (
 )
 
 type File struct {
-	types.UiidID[File]
-	Public       bool                             `gorm:"default:false"`
-	Filename     string                           `gorm:"size:2048"`
-	Size         uint64                           ``
-	ContentType  string                           `gorm:"size:256"`
-	UploadedByID types.Optional[identity.UserRef] ``
-	UploadedBy   types.Optional[identity.User]    ``
+	types.ID[File]
+	Public       bool          `gorm:"default:false"`
+	Filename     string        `gorm:"size:2048"`
+	Size         uint64        ``
+	ContentType  string        `gorm:"size:256"`
+	UploadedByID uint64        ``
+	UploadedBy   identity.User ``
 	types.CreatedAtTime
 	types.UpdatedAtTime
 }

@@ -2,7 +2,6 @@ package pages
 
 import (
 	"github.com/gosimple/slug"
-	"gorm.io/gorm"
 
 	"github.com/Thomasparsley/vel/types"
 )
@@ -12,7 +11,7 @@ const (
 )
 
 type Page struct {
-	types.UintID[Page]
+	types.ID[Page]
 	Public bool   `gorm:"default:false"`
 	Title  string `gorm:"size:512;index"`
 	Slug   string `gorm:"size:512;index"`
@@ -29,26 +28,31 @@ func (p *Page) Slugify() {
 	p.Slug = slug.Make(p.Title)
 }
 
-func (p Page) Save(db *gorm.DB) (Page, error) {
+func Create(data Page) (Page, error) {
+	data.Slugify()
+
+	return Page{}.
+		Object().
+		Create(data)
+}
+
+func (p Page) Save() (Page, error) {
 	p.Slugify()
-	return Page{}.Object(db).
+	return Page{}.
+		Object().
 		Save(p)
 }
 
-func GetBySlug(db *gorm.DB, slug string) (types.Optional[Page], error) {
-	return Page{}.Object(db).
+func GetBySlug(slug string) (types.Optional[Page], error) {
+	return Page{}.
+		Object().
 		Where(Page{Slug: slug}).
 		First()
 }
 
-func GetPublicBySlug(db *gorm.DB, slug string) (types.Optional[Page], error) {
-	return Page{}.Object(db).
+func GetPublicBySlug(slug string) (types.Optional[Page], error) {
+	return Page{}.
+		Object().
 		Where(Page{Public: true, Slug: slug}).
 		First()
-}
-
-func Create(db *gorm.DB, data Page) (Page, error) {
-	data.Slugify()
-	return Page{}.Object(db).
-		Create(data)
 }

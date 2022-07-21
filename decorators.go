@@ -1,6 +1,9 @@
 package vel
 
-import "github.com/Thomasparsley/vel/modules/identity"
+import (
+	"github.com/Thomasparsley/vel/modules/identity"
+	"github.com/gofiber/fiber/v2"
+)
 
 func requestDataParser[T any](parser func(out any) error) (T, error) {
 	var data T
@@ -14,8 +17,8 @@ func requestDataParser[T any](parser func(out any) error) (T, error) {
 }
 
 // Parse query and store to locals
-func Query[Q any]() Handler {
-	return func(ctx *Ctx) error {
+func Query[Q any]() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
 		query, err := requestDataParser[Q](ctx.QueryParser)
 		if err != nil {
 			return err
@@ -27,8 +30,8 @@ func Query[Q any]() Handler {
 }
 
 // Parse body and store to locals
-func Body[B any]() Handler {
-	return func(ctx *Ctx) error {
+func Body[B any]() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
 		body, err := requestDataParser[B](ctx.BodyParser)
 		if err != nil {
 			return err
@@ -40,8 +43,8 @@ func Body[B any]() Handler {
 }
 
 // Parse params and store to locals
-func Params[P any]() Handler {
-	return func(ctx *Ctx) error {
+func Params[P any]() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
 		params, err := requestDataParser[P](ctx.ParamsParser)
 		if err != nil {
 			return err
@@ -52,8 +55,8 @@ func Params[P any]() Handler {
 	}
 }
 
-func Redirect(location string, status ...int) Handler {
-	return func(ctx *Ctx) error {
+func Redirect(location string, status ...int) fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
 		err := ctx.Next()
 
 		if err != nil {
@@ -64,9 +67,9 @@ func Redirect(location string, status ...int) Handler {
 	}
 }
 
-func AuthenticationRequired() Handler {
-	return func(ctx *Ctx) error {
-		user := ctx.GetLocalUser()
+func AuthenticationRequired() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		user := GetLocalUser(ctx)
 		if user == nil {
 			return nil // TODO: return error
 		}
@@ -75,14 +78,14 @@ func AuthenticationRequired() Handler {
 	}
 }
 
-func AdminRequired() Handler {
-	return func(ctx *Ctx) error {
+func AdminRequired() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
 		err := AuthenticationRequired()(ctx)
 		if err != nil {
 			return err
 		}
 
-		user := ctx.GetLocalUser()
+		user := GetLocalUser(ctx)
 		if !user.IsAdmin() {
 			return nil // TODO: Return error
 		}
@@ -91,14 +94,14 @@ func AdminRequired() Handler {
 	}
 }
 
-func RoleRequired(name identity.RoleName) Handler {
-	return func(ctx *Ctx) error {
+func RoleRequired(name identity.RoleName) fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
 		err := AuthenticationRequired()(ctx)
 		if err != nil {
 			return err
 		}
 
-		user := ctx.GetLocalUser()
+		user := GetLocalUser(ctx)
 		if !user.HasRole(name) {
 			return nil // TODO: Return error
 		}
@@ -107,18 +110,27 @@ func RoleRequired(name identity.RoleName) Handler {
 	}
 }
 
-func PermissionRequired(name identity.PermissionName, permissions identity.Permissions) Handler {
-	return func(ctx *Ctx) error {
+func PermissionRequired(name identity.PermissionName, permissions identity.Permissions) fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
 		err := AuthenticationRequired()(ctx)
 		if err != nil {
 			return err
 		}
 
-		user := ctx.GetLocalUser()
+		user := GetLocalUser(ctx)
 		if !user.HasPermission(name, permissions) {
 			return nil // TODO: Return error
 		}
 
 		return ctx.Next()
 	}
+}
+
+func GetLocalUser(ctx *fiber.Ctx) *identity.User {
+	u := ctx.Locals("user")
+	if u == nil {
+		return nil
+	}
+
+	return u.(*identity.User)
 }
