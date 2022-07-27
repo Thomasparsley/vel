@@ -1,8 +1,8 @@
 package files
 
 import (
+	"github.com/Thomasparsley/vel/database/fields"
 	"github.com/Thomasparsley/vel/modules/identity"
-	"github.com/Thomasparsley/vel/types"
 )
 
 const (
@@ -10,15 +10,15 @@ const (
 )
 
 type File struct {
-	types.IdField[File]
-	Public       bool          `gorm:"default:false"`
-	Filename     string        `gorm:"size:2048"`
-	Size         uint64        ``
-	ContentType  string        `gorm:"size:256"`
-	UploadedByID uint64        ``
-	UploadedBy   identity.User ``
-	types.CreatedAtTime
-	types.UpdatedAtTime
+	fields.IdField[File]
+	Public      bool   `gorm:"default:false"`
+	Filename    string `gorm:"size:2048"`
+	Size        uint64 ``
+	ContentType string `gorm:"size:256"`
+	identity.UploadedByField
+	identity.UpdatedByField
+	fields.CreatedAtField
+	fields.UpdatedAtField
 }
 
 func (File) TableName() string {

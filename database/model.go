@@ -1,12 +1,8 @@
-package types
-
-import (
-	"github.com/Thomasparsley/vel/database"
-)
+package database
 
 type Model[ID ComperableID, Self ObjectDefinition[ID]] struct{}
 
 func (Model[ID, Self]) Object() Object[ID, Self] {
-	db := database.Get()
+	db := Get()
 	return NewObject[ID, Self](db)
 }

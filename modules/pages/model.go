@@ -3,7 +3,8 @@ package pages
 import (
 	"github.com/gosimple/slug"
 
-	"github.com/Thomasparsley/vel/types"
+	"github.com/Thomasparsley/vel/database/fields"
+	"github.com/Thomasparsley/vel/modules/identity"
 )
 
 const (
@@ -11,13 +12,15 @@ const (
 )
 
 type Page struct {
-	types.IdField[Page]
+	fields.IdField[Page]
 	Public bool   `gorm:"default:false"`
 	Title  string `gorm:"size:512;index"`
 	Slug   string `gorm:"size:512;index"`
-	Body   string
-	types.CreatedAtTime
-	types.UpdatedAtTime
+	Body   string ``
+	identity.CreatedByField
+	identity.UpdatedByField
+	fields.CreatedAtField
+	fields.UpdatedAtField
 }
 
 func (Page) TableName() string {

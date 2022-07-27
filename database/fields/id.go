@@ -1,11 +1,12 @@
-package types
+package fields
 
 import (
+	"github.com/Thomasparsley/vel/database"
 	"github.com/Thomasparsley/vel/hashids"
 )
 
-type IdField[Self ObjectDefinition[uint64]] struct {
-	Model[uint64, Self]
+type IdField[Self database.ObjectDefinition[uint64]] struct {
+	database.Model[uint64, Self]
 	ID uint64 `gorm:"primaryKey;->;index"`
 }
 

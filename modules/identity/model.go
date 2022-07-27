@@ -1,25 +1,23 @@
 package identity
 
 import (
-	"github.com/Thomasparsley/vel/types"
+	"github.com/Thomasparsley/vel/database/fields"
 )
 
 const (
 	TableName_Users = "velusers"
 )
 
-type UserRef types.IdField[User]
-
 type User struct {
-	types.IdField[User]
+	fields.IdField[User]
 	Username string `gorm:"size:64;index"`
 	Email    string `gorm:"size:320;index"`
 	Password string `gorm:"size:128"`
 	Admin    bool   `gorm:"default:false"`
 	Enabled  bool   `gorm:"default:true"`
 	Role     string `gorm:"size:3"`
-	types.CreatedAtTime
-	types.UpdatedAtTime
+	fields.CreatedAtField
+	fields.UpdatedAtField
 }
 
 func (User) TableName() string {
