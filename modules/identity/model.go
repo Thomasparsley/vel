@@ -8,10 +8,10 @@ const (
 	TableName_Users = "velusers"
 )
 
-type UserRef types.ID[User]
+type UserRef types.IdField[User]
 
 type User struct {
-	types.ID[User]
+	types.IdField[User]
 	Username string `gorm:"size:64;index"`
 	Email    string `gorm:"size:320;index"`
 	Password string `gorm:"size:128"`

@@ -10,7 +10,7 @@ const (
 )
 
 type File struct {
-	types.ID[File]
+	types.IdField[File]
 	Public       bool          `gorm:"default:false"`
 	Filename     string        `gorm:"size:2048"`
 	Size         uint64        ``

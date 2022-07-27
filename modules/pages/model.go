@@ -11,7 +11,7 @@ const (
 )
 
 type Page struct {
-	types.ID[Page]
+	types.IdField[Page]
 	Public bool   `gorm:"default:false"`
 	Title  string `gorm:"size:512;index"`
 	Slug   string `gorm:"size:512;index"`
