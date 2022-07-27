@@ -43,14 +43,14 @@ func (p Page) Save() (Page, error) {
 		Save(p)
 }
 
-func GetBySlug(slug string) (types.Optional[Page], error) {
+func GetBySlug(slug string) (*Page, error) {
 	return Page{}.
 		Object().
 		Where(Page{Slug: slug}).
 		First()
 }
 
-func GetPublicBySlug(slug string) (types.Optional[Page], error) {
+func GetPublicBySlug(slug string) (*Page, error) {
 	return Page{}.
 		Object().
 		Where(Page{Public: true, Slug: slug}).

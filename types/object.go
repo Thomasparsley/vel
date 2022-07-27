@@ -46,19 +46,19 @@ func (o Object[ID, O]) Preload(query string, args ...interface{}) Object[ID, O] 
 }
 
 // First find first record that match given conditions, order by primary key
-func (o Object[ID, O]) First() (Optional[O], error) {
+func (o Object[ID, O]) First() (*O, error) {
 	var data O
 
 	response := o.query.First(&data)
 	if response.Error != nil {
 		if errors.Is(response.Error, gorm.ErrRecordNotFound) {
-			return None[O](), nil
+			return nil, nil
 		}
 
-		return None[O](), response.Error
+		return nil, response.Error
 	}
 
-	return Some(data), nil
+	return &data, nil
 }
 
 // Find find records that match given conditions
@@ -108,13 +108,13 @@ func (o Object[ID, O]) Create(data O) (O, error) {
 }
 
 // FirstOrCreate gets the first matched record or create a new one with given conditions (only works with struct, map conditions)
-func (o Object[ID, O]) FirstOrCreate(data O) (Optional[O], error) {
+func (o Object[ID, O]) FirstOrCreate(data O) (*O, error) {
 	response := o.query.FirstOrCreate(&data)
 	if response.Error != nil {
-		return None[O](), response.Error
+		return nil, response.Error
 	}
 
-	return Some(data), nil
+	return &data, nil
 }
 
 // Save update value in database, if the value doesn't have primary key, will insert it
