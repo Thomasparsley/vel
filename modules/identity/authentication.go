@@ -9,15 +9,11 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-type Authentication struct {
-	token []byte
-}
-
-func (auth Authentication) Login(username string, password string) {
+func Login(username string, password string) {
 
 }
 
-func (auth Authentication) Verify(tokenToVerify string) {
+func Verify(verifedToken []byte, tokenToVerify string) {
 	tokenToVerify = strings.TrimSpace(tokenToVerify)
 
 	if tokenToVerify == "" {
@@ -30,7 +26,7 @@ func (auth Authentication) Verify(tokenToVerify string) {
 				"unexpected signing method: %v", t.Header["alg"])
 		}
 
-		return auth.token, nil
+		return verifedToken, nil
 	})
 	if err != nil {
 		return // TODO:
@@ -63,7 +59,7 @@ func (auth Authentication) Verify(tokenToVerify string) {
 			ExpiresAt: time.Now().Add(time.Hour * 1).Unix(),
 		})
 
-		newToken, err = newClaims.SignedString(auth.token)
+		newToken, err = newClaims.SignedString(verifedToken)
 		if err != nil {
 			return // TODO:
 		}

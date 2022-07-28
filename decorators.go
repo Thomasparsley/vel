@@ -110,7 +110,7 @@ func RoleRequired(name identity.RoleName) fiber.Handler {
 	}
 }
 
-func PermissionRequired(name identity.PermissionName, permissions identity.Permissions) fiber.Handler {
+func PermissionRequired(name identity.PermissionName) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		err := AuthenticationRequired()(ctx)
 		if err != nil {
@@ -118,7 +118,7 @@ func PermissionRequired(name identity.PermissionName, permissions identity.Permi
 		}
 
 		user := GetLocalUser(ctx)
-		if !user.HasPermission(name, permissions) {
+		if !user.HasPermission(name) {
 			return nil // TODO: Return error
 		}
 

@@ -4,18 +4,16 @@ import (
 	"github.com/Thomasparsley/vel/database/fields"
 )
 
-const (
-	TableName_Users = "velusers"
-)
+const TableName_Users = "vel__users"
 
 type User struct {
 	fields.IdField[User]
 	Username string `gorm:"size:64;index"`
 	Email    string `gorm:"size:320;index"`
 	Password string `gorm:"size:128"`
-	Admin    bool   `gorm:"default:false"`
 	Enabled  bool   `gorm:"default:true"`
-	Role     string `gorm:"size:3"`
+	Admin    bool   `gorm:"default:false"`
+	Role     string `gorm:"size:12"`
 	fields.CreatedAtField
 	fields.UpdatedAtField
 }
@@ -24,24 +22,24 @@ func (User) TableName() string {
 	return TableName_Users
 }
 
-func (u User) IsAdmin() bool {
-	return u.Admin
+func (user User) IsAdmin() bool {
+	return user.Admin
 }
 
-func (u User) RoleName() RoleName {
-	return RoleName(u.Role)
+func (user User) RoleName() RoleName {
+	return RoleName(user.Role)
 }
 
-func (u User) HasRole(name RoleName) bool {
-	return u.RoleName() == name
+func (user User) HasRole(roleName RoleName) bool {
+	return user.RoleName() == roleName
 }
 
-func (u User) HasPermission(name PermissionName, permissions Permissions) bool {
-	if u.IsAdmin() {
+func (user User) HasPermission(permissionName PermissionName) bool {
+	if user.IsAdmin() {
 		return true
 	}
 
-	val, ok := permissions[u.RoleName()][name]
+	val, ok := GetPermissionsMap()[user.RoleName()][permissionName]
 	if ok && bool(val) {
 		return true
 	}
