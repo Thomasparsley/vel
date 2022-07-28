@@ -17,5 +17,9 @@ func Initialize() {
 }
 
 func Get() *gorm.DB {
+	if instance == nil {
+		panic("database connection instace wasnt initialize")
+	}
+
 	return instance
 }

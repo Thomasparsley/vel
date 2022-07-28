@@ -30,5 +30,9 @@ func Initialize(salt string, minLength uint) error {
 }
 
 func Get() *hashids.HashID {
+	if instance == nil {
+		panic("hashids instace wasnt initialize")
+	}
+
 	return instance
 }
