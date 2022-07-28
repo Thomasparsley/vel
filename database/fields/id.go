@@ -14,6 +14,11 @@ func (id IdField[Self]) PK() uint64 {
 	return id.ID
 }
 
-func (id IdField[Self]) HashedID() (string, error) {
+func (id IdField[Self]) HashedIDWithError() (string, error) {
 	return hashids.Get().Encode([]int{int(id.ID)})
+}
+
+func (id IdField[Self]) HashedID() string {
+	hashedId, _ := id.HashedIDWithError()
+	return hashedId
 }

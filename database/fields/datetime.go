@@ -11,7 +11,7 @@ func (t *CreatedAtField) CreatedNow() {
 }
 
 type UpdatedAtField struct {
-	UpdatedAt *time.Time `gorm:"autoUpdateTime"`
+	UpdatedAt *time.Time `gorm:"autoUpdateTime;index"`
 }
 
 func (t *UpdatedAtField) UpdatedNow() {
