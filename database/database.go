@@ -30,7 +30,8 @@ func (c Config) dsn() string {
 	}
 
 	return fmt.Sprintf(
-		"user=%s password=%s dbname=%s port=%d sslmode=%s TimeZone=%s",
+		"host=%s user=%s password=%s dbname=%s port=%d sslmode=%s TimeZone=%s",
+		c.Host,
 		c.User,
 		c.Password,
 		c.DatabaseName,
