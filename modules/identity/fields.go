@@ -11,6 +11,6 @@ type CreatedByField struct {
 }
 
 type UpdatedByField struct {
-	UpdatedByID uint64 ``
-	UpdatedBy   *User  ``
+	UpdatedByID *uint64 ``
+	UpdatedBy   *User   ``
 }
