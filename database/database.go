@@ -24,7 +24,7 @@ type Config struct {
 }
 
 func (c Config) dsn() string {
-	sslMode := "disabled"
+	sslMode := "disable"
 	if c.SSL {
 		sslMode = "enabled"
 	}
