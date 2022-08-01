@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	TableName_Files = "velfiles"
+	TableName_Files = "vel__files"
 )
 
 type File struct {

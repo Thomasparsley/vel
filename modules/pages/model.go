@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	TableName_Pages = "velpages"
+	TableName_Pages = "vel__pages"
 )
 
 type Page struct {
