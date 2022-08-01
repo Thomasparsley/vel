@@ -79,6 +79,9 @@ func (o Object[ID, O]) Exists() (bool, error) {
 	var zeroValueID ID
 
 	response := o.query.First(&data)
+	if errors.Is(response.Error, gorm.ErrRecordNotFound) {
+		return false, nil
+	}
 	if response.Error != nil {
 		return false, response.Error
 	}
