@@ -18,7 +18,7 @@ class Page(models.Model):
     created_at = basic_fields.CREATED_AT_FIELD
     updated_at = basic_fields.UPDATED_AT_FIELD
 
-    class Meta: # type: ignore
+    class Meta:  # type: ignore
         table = "vel__pages"
 
     def render(self) -> str:

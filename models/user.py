@@ -3,7 +3,7 @@ from typing import Final, NewType
 
 from tortoise import fields, models
 
-from . import basic_fields
+from .. import basic_fields
 
 
 Permission: Final = NewType("Permission", str)
@@ -79,18 +79,18 @@ class User(Authorization):
     created_at = basic_fields.CREATED_AT_FIELD
     updated_at = basic_fields.UPDATED_AT_FIELD
 
-    class Meta: # type: ignore
+    class Meta:  # type: ignore
         table = "vel_users"
 
     def __init__(self, username: str, email: str, password: str):
+        super().__init__()
+
         self.username = username
         self.email = email
         self.password = password
 
         self.enabled = True
         self.created_at = datetime.now()
-
-        super().__init__()
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, User):
