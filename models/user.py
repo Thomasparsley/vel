@@ -80,7 +80,7 @@ class User(Authorization):
     updated_at = basic_fields.UPDATED_AT_FIELD
 
     class Meta:  # type: ignore
-        table = "vel_users"
+        table = "vel__users"
 
     def __init__(self, username: str, email: str, password: str):
         super().__init__()

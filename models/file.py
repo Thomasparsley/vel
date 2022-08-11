@@ -30,7 +30,7 @@ IMAGES_EXT: Final = [
 ]
 
 
-class File(models.Model, HashidsMixin):
+class File(HashidsMixin, models.Model):
     id = basic_fields.ID_FIELD
     visibility = basic_fields.VISIBILITY_FIELD
     filename = fields.CharField(max_length=2048, null=False, index=True)

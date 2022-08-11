@@ -5,7 +5,7 @@ from .singleton import Singleton
 
 
 class HashidsSingleton(Singleton):
-    __hashids = __Hashids(salt=ConfigFactory.get().HASHED_ID_SALT)
+    __hashids = __Hashids(salt=ConfigFactory().get().HASHED_ID_SALT)
 
     def decode(self, ids: str) -> tuple[int]:
         return self.__hashids.decode(ids)  # type: ignore

@@ -32,7 +32,7 @@ class LiveReload:
 
     class EventHandler(LoggingEventHandler):
         def __init__(self, manager: "LiveReload.WSHub", logger: Any = None):
-            super().__init__(logger)
+            super().__init__(logger) # type: ignore
 
             self.manager = manager
 

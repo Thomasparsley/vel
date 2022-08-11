@@ -5,6 +5,7 @@ from PIL import Image
 from fastapi import UploadFile
 from fastapi.responses import FileResponse
 
+from ..exceptions import FileNotFoundException
 from ..models.file import (
     File,
     ImageSize,
@@ -46,6 +47,21 @@ async def generate_image(
 
         case ImageType.WEBP:
             image.save(save_to, format="webp")
+
+
+async def file_handler(
+    hashed_id: str,
+    size: ImageSize = ImageSize.DEFAULT,
+    type: ImageType = ImageType.DEFAULT,
+):
+    file = await File.get_by_hashed_id(hashed_id)
+    if not file:
+        raise FileNotFoundException()
+
+    if file.is_image():
+        return await image_handler(file, size, type)
+
+    return FileResponse(pathlib.Path(f"./files/{file.filename}"))
 
 
 async def image_handler(file: File, size: ImageSize, type: ImageType):

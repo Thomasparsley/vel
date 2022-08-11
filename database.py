@@ -25,7 +25,7 @@ class Database:
 
         await Tortoise.init(  # type: ignore
             db_url=connection_string,
-            modules=models,  # type: ignore
+            modules=models, # type: ignore
         )
 
         self.__is_init = True

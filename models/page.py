@@ -1,9 +1,7 @@
-import enum
-from datetime import datetime
-
 from tortoise import fields, models
 
-from . import basic_fields, user
+from . import user
+from .. import basic_fields
 
 
 class Page(models.Model):
@@ -18,7 +16,7 @@ class Page(models.Model):
     created_at = basic_fields.CREATED_AT_FIELD
     updated_at = basic_fields.UPDATED_AT_FIELD
 
-    class Meta:  # type: ignore
+    class Meta: # type: ignore
         table = "vel__pages"
 
     def render(self) -> str:

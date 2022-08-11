@@ -33,7 +33,7 @@ class _TemplateResponse(Response):
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         request = self.context.get("request", {})
-        extensions = request.get("extensions", {})  # type: ignore
+        extensions = request.get("extensions", {}) # type: ignore
         if "http.response.template" in extensions:
             await send(
                 {
@@ -48,15 +48,15 @@ class _TemplateResponse(Response):
 class Jinja2Templating:
     def __init__(
         self,
-        directory: str | PathLike,  # type: ignore
+        directory: str | PathLike, # type: ignore
         **env_options: typing.Any,
     ) -> None:
         assert jinja2 is not None, "jinja2 must be installed to use Jinja2Templates"
-        self.env = self.__create_env(directory, **env_options)  # type: ignore
+        self.env = self.__create_env(directory, **env_options) # type: ignore
 
     def __create_env(
         self,
-        directory: str | PathLike,  # type: ignore
+        directory: str | PathLike, # type: ignore
         **env_options: typing.Any,
     ) -> jinja2.Environment:
         @jinja2.pass_context

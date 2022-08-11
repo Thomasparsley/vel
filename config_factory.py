@@ -1,20 +1,21 @@
 import os
 import importlib
+from types import ModuleType
 
 from . import constants
+from singleton import Singleton
 
 
-class ConfigFactory:
-    __MOD = None
+class ConfigFactory(Singleton):
+    __mod = None
 
-    @staticmethod
-    def get():
-        if ConfigFactory.__MOD is not None:
-            return ConfigFactory.__MOD
+    def get(self) -> ModuleType:
+        if self.__mod is not None:
+            return self.__mod
 
         module_path = os.environ.get(constants.ENVIRONMENT_VARIABLE)
         if module_path is None:
             raise ValueError
 
-        ConfigFactory.__MOD = importlib.import_module(module_path)
-        return ConfigFactory.__MOD
+        self.__mod = importlib.import_module(module_path)
+        return self.get()
