@@ -6,15 +6,12 @@ from fastapi import UploadFile
 from fastapi.responses import FileResponse
 
 from ..exceptions import FileNotFoundException
-from ..models.file import (
-    File,
-    ImageSize,
-    ImageType,
-    exist_file,
-)
+from ..models import FileModel
+from ..utils import exist_file
+from ..utils.image import ImageSize, ImageType
 
 
-def image_path(file: File, size: ImageSize, type: ImageType):
+def image_path(file: FileModel, size: ImageSize, type: ImageType):
     match (size, type):
         case (ImageSize.DEFAULT, ImageType.DEFAULT):
             return pathlib.Path(f"./files/{file.filename}")
@@ -30,7 +27,7 @@ def image_path(file: File, size: ImageSize, type: ImageType):
 
 
 async def generate_image(
-    file: File,
+    file: FileModel,
     save_to: pathlib.Path,
     size: ImageSize,
     type: ImageType,
@@ -54,7 +51,7 @@ async def file_handler(
     size: ImageSize = ImageSize.DEFAULT,
     type: ImageType = ImageType.DEFAULT,
 ):
-    file = await File.get_by_hashed_id(hashed_id)
+    file = await FileModel.get_by_hashed_id(hashed_id)
     if not file:
         raise FileNotFoundException()
 
@@ -64,7 +61,7 @@ async def file_handler(
     return FileResponse(pathlib.Path(f"./files/{file.filename}"))
 
 
-async def image_handler(file: File, size: ImageSize, type: ImageType):
+async def image_handler(file: FileModel, size: ImageSize, type: ImageType):
     file_path = image_path(file, size, type)
 
     if not exist_file(file_path):
@@ -75,7 +72,7 @@ async def image_handler(file: File, size: ImageSize, type: ImageType):
 
 async def uploaded_file_handler(file: UploadFile):
     content = await file.read()
-    db_file = File(len(content), file.filename, file.content_type)
+    db_file = FileModel(len(content), file.filename, file.content_type)
     await db_file.save()
 
     async with aiofiles.open(f"./files/{file.filename}", "wb") as writer:

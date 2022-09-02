@@ -1,6 +1,6 @@
 from datetime import datetime
 from os import PathLike
-import typing
+from typing import Any, Mapping
 
 from starlette.types import Receive, Scope, Send
 from starlette.background import BackgroundTask
@@ -10,7 +10,7 @@ from fastapi import Request
 import minify_html
 import jinja2
 
-Context = dict[str, typing.Any]
+Context = dict[str, Any]
 
 
 class _TemplateResponse(Response):
@@ -21,9 +21,9 @@ class _TemplateResponse(Response):
         template: jinja2.Template,
         context: Context,
         status_code: int = 200,
-        headers: typing.Optional[typing.Mapping[str, str]] = None,
-        media_type: typing.Optional[str] = None,
-        background: typing.Optional[BackgroundTask] = None,
+        headers: Mapping[str, str] | None = None,
+        media_type: str | None = None,
+        background: BackgroundTask | None = None,
     ):
         self.template = template
         self.context = context
@@ -33,7 +33,7 @@ class _TemplateResponse(Response):
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         request = self.context.get("request", {})
-        extensions = request.get("extensions", {}) # type: ignore
+        extensions = request.get("extensions", {})  # type: ignore
         if "http.response.template" in extensions:
             await send(
                 {
@@ -48,19 +48,19 @@ class _TemplateResponse(Response):
 class Jinja2Templating:
     def __init__(
         self,
-        directory: str | PathLike, # type: ignore
-        **env_options: typing.Any,
+        directory: str | PathLike,  # type: ignore
+        **env_options: Any,
     ) -> None:
         assert jinja2 is not None, "jinja2 must be installed to use Jinja2Templates"
-        self.env = self.__create_env(directory, **env_options) # type: ignore
+        self.env = self.__create_env(directory, **env_options)  # type: ignore
 
     def __create_env(
         self,
-        directory: str | PathLike, # type: ignore
-        **env_options: typing.Any,
+        directory: str | PathLike,  # type: ignore
+        **env_options: Any,
     ) -> jinja2.Environment:
         @jinja2.pass_context
-        def url_for(context: Context, name: str, **path_params: typing.Any) -> str:
+        def url_for(context: Context, name: str, **path_params: Any) -> str:
             request = context["request"]
             return request.url_for(name, **path_params)
 
@@ -87,9 +87,9 @@ class Jinja2Templating:
         name: str,
         context: Context,
         status_code: int = 200,
-        headers: typing.Optional[typing.Mapping[str, str]] = None,
-        media_type: typing.Optional[str] = None,
-        background: typing.Optional[BackgroundTask] = None,
+        headers: Mapping[str, str] | None = None,
+        media_type: str | None = None,
+        background: BackgroundTask | None = None,
     ) -> _TemplateResponse:
         context["request"] = request
 

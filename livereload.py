@@ -32,13 +32,14 @@ class LiveReload:
 
     class EventHandler(LoggingEventHandler):
         def __init__(self, manager: "LiveReload.WSHub", logger: Any = None):
-            super().__init__(logger) # type: ignore
+            super().__init__(logger)  # type: ignore
 
             self.manager = manager
 
-        def on_modified(self, event: Any):
-            super().on_modified(event)  # type: ignore
+        def on_any_event(self, event: Any):
+            result = super().on_any_event(event)  # type: ignore
             asyncio.run(self.broadcast_reload())
+            return result
 
         async def broadcast_reload(self):
             return await self.manager.broadcast_json(

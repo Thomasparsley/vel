@@ -3,7 +3,7 @@ import importlib
 from types import ModuleType
 
 from . import constants
-from singleton import Singleton
+from .utils import Singleton
 
 
 class ConfigFactory(Singleton):

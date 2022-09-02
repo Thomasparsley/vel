@@ -1,6 +1,5 @@
 from tortoise import fields, models
 
-from . import user
 from .. import basic_fields
 
 
@@ -11,13 +10,11 @@ class Page(models.Model):
     slug = fields.CharField(max_length=255, null=False, unique=True, index=True)
     body = fields.TextField()
 
-    created_by = user.CREATED_BY_FIELD
-    updated_by = user.UPDATED_BY_FIELD
     created_at = basic_fields.CREATED_AT_FIELD
     updated_at = basic_fields.UPDATED_AT_FIELD
 
-    class Meta: # type: ignore
-        table = "vel__pages"
+    class Meta:  # type: ignore
+        abstract = True
 
     def render(self) -> str:
         return ""

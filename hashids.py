@@ -1,11 +1,12 @@
 from hashids import Hashids as __Hashids  # type: ignore
 
 from .config_factory import ConfigFactory
-from .singleton import Singleton
+from .utils import Singleton
 
 
 class HashidsSingleton(Singleton):
-    __hashids = __Hashids(salt=ConfigFactory().get().HASHED_ID_SALT)
+    def __init__(self):
+        self.__hashids = __Hashids(salt=ConfigFactory().get().HASHED_ID_SALT)
 
     def decode(self, ids: str) -> tuple[int]:
         return self.__hashids.decode(ids)  # type: ignore

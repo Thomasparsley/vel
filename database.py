@@ -3,7 +3,9 @@ from dataclasses import dataclass
 from typing import Optional
 from enum import IntEnum
 
+from fastapi import FastAPI
 from tortoise import Tortoise
+from tortoise.contrib.fastapi import register_tortoise  # type: ignore
 
 
 class DatabaseType(IntEnum):
@@ -25,7 +27,7 @@ class Database:
 
         await Tortoise.init(  # type: ignore
             db_url=connection_string,
-            modules=models, # type: ignore
+            modules=models,  # type: ignore
         )
 
         self.__is_init = True
@@ -54,3 +56,11 @@ class Database:
 
     def __get_postgres_connection(self) -> str:
         return f"postgres://{self.user}:{self.password}@{self.server_address}:{self.server_port}/{self.database_name}"
+
+    def register_into_fastapi(self, app: FastAPI, modules: dict[str, list[str]]):
+        register_tortoise(
+            app,
+            db_url=self.get_connection_str(),
+            modules=modules,  # type: ignore
+            add_exception_handlers=True,
+        )
