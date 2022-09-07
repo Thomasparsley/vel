@@ -10,6 +10,7 @@ from fastapi import Request
 import minify_html
 import jinja2
 
+
 Context = dict[str, Any]
 
 
@@ -92,6 +93,7 @@ class Jinja2Templating:
         background: BackgroundTask | None = None,
     ) -> _TemplateResponse:
         context["request"] = request
+        context["user"] = request.user
 
         return _TemplateResponse(
             self.get_template(name),

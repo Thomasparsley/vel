@@ -1,36 +1,39 @@
-from hashids import Hashids as __Hashids  # type: ignore
+from hashids import Hashids as _Hashids  # type: ignore
 
-from .config_factory import ConfigFactory
-from .utils import Singleton
+from .config import Config
 
 
-class HashidsSingleton(Singleton):
-    def __init__(self):
-        self.__hashids = __Hashids(salt=ConfigFactory().get().HASHED_ID_SALT)
+class Hashids:
+    hashid = _Hashids(salt=Config.hashids_salt, min_length=6)
 
-    def decode(self, ids: str) -> tuple[int]:
-        return self.__hashids.decode(ids)  # type: ignore
+    @staticmethod
+    def encode(id: int) -> str:
+        return Hashids.hashid.encode(  # type: ignore
+            id,
+        )
 
-    def decode_single(self, id: str) -> int | None:
-        ids = self.decode(id)
+    @staticmethod
+    def decode(ids: str) -> tuple[int]:
+        return Hashids.hashid.decode(ids)  # type: ignore
+
+    @staticmethod
+    def decode_single(id: str) -> int | None:
+        ids = Hashids.decode(id)
 
         try:
             return ids[0]
         except IndexError:
             return None
 
-    def encode(self, ids: list[int]) -> str:
-        return self.__hashids.encode(ids)  # type: ignore
-
 
 class HashidsMixin:
     id: int = 0
-    __hashed_id: str | None = None
+    _hashed_id: str | None = None
 
     @property
     def hashed_id(self) -> str:
-        if self.__hashed_id is not None:
-            return self.__hashed_id
+        if self._hashed_id is not None:
+            return self._hashed_id
         else:
-            self.__hashed_id = HashidsSingleton().encode([self.id])
+            self._hashed_id = Hashids.encode(self.id)
             return self.hashed_id

@@ -3,7 +3,7 @@ from tortoise.exceptions import DoesNotExist
 
 from .. import basic_fields
 from ..visibility import Visibility
-from ..hashids import HashidsMixin, HashidsSingleton
+from ..hashids import HashidsMixin, Hashids
 
 
 class FileModel(models.Model, HashidsMixin):
@@ -30,7 +30,7 @@ class FileModel(models.Model, HashidsMixin):
 
     @classmethod
     async def get_by_hashed_id(cls, hashed_id: str):
-        id = HashidsSingleton().decode_single(hashed_id)
+        id = Hashids().decode_single(hashed_id)
         if not id:
             return None
 

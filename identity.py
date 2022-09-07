@@ -1,32 +1,27 @@
-from typing import Final, NewType, TypeVar, Any
+from typing import Final, Any, NewType, TypeVar
+from calendar import timegm
 from datetime import datetime, timedelta
 
-from tortoise import fields, models
-
 from fastapi import Cookie
-from passlib.context import CryptContext
 from jose import JWTError, jwt
-
-from vel.exceptions import InvalidAuthenticationError
+from tortoise import fields, models
+from passlib.context import CryptContext
 
 from . import basic_fields
-from .hashids import HashidsMixin, HashidsSingleton
-from .config_factory import ConfigFactory
+from .config import Config
+from .hashids import HashidsMixin, Hashids
+from .exceptions import InvalidAuthenticationError
 
 
 JWT_ALGORITHM: Final = "HS256"
-SECRET_KEY: str = ConfigFactory().get().SECRET_KEY
+SECRET_KEY: str = Config.secret_key
+USER_CLASS: type["UserModel"] = Config.user_class
 
 UserType = TypeVar("UserType", bound="UserModel")
 RoleType: Final = NewType("RoleType", str)
 PermissionType: Final = NewType("PermissionType", str)
 
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-def get_password_hash(password: str):
-    return pwd_context.hash(password)
 
 
 def create_access_token(
@@ -46,28 +41,60 @@ def create_access_token(
     return encoded_jtw
 
 
-async def try_get_current_user(token: str | None = Cookie(default=None)):
+async def process_jwt_token(
+    token: str | None,
+) -> tuple["UserModel" | None, str | None]:
     if not token:
-        return None
+        return (None, None)
 
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[JWT_ALGORITHM])
     except JWTError:
-        return None
+        return (None, None)
 
     hashed_id = payload.get("id")
     if not hashed_id:
-        return None
+        return (None, None)
 
-    user = await UserModel.get_with_hashed_id(hashed_id)
+    user = await USER_CLASS.get_with_hashed_id(hashed_id)
+
+    new_token = None
+    if user:
+        now = datetime.utcnow() + timedelta(minutes=5)
+        now = timegm(datetime.utcnow().utctimetuple())
+        exp = payload.get("exp")
+        if not exp:
+            raise ValueError
+
+        if now > exp:
+            new_token = create_access_token(user, payload)
+
+    return (user, new_token)
+
+
+async def try_get_current_user(token: str | None = Cookie(default=None)):
+    user, _ = await process_jwt_token(token)
     return user
 
 
 async def get_current_user(token: str | None = Cookie(default=None)):
-    user = try_get_current_user(token)
+    user = await try_get_current_user(token)
     if not user:
         raise InvalidAuthenticationError
     return user
+
+
+def authenticate_user(user: "UserModel" | None, password: str | None) -> bool:
+    if not user:
+        return False
+    elif not password:
+        return False
+
+    return user.verify_password(password)
+
+
+def get_password_hash(password: str):
+    return pwd_context.hash(password)
 
 
 class UserModel(models.Model, HashidsMixin):
@@ -101,7 +128,7 @@ class UserModel(models.Model, HashidsMixin):
 
     @classmethod
     async def get_with_hashed_id(cls, hashed_id: str):
-        id = HashidsSingleton().decode_single(hashed_id)
+        id = Hashids().decode_single(hashed_id)
         if not id:
             return None
 
@@ -168,12 +195,3 @@ class Authorization(models.Model):
             return permissions[permission]
 
         return False
-
-
-def authenticate_user(user: UserModel | None, password: str | None) -> bool:
-    if not user:
-        return False
-    elif not password:
-        return False
-
-    return user.verify_password(password)

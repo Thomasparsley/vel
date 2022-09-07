@@ -4,7 +4,7 @@ from typing import Any
 from fastapi import Request
 
 
-class ProcessTimeHeader:
+class ProcessTimeHeaderMiddleware:
     async def __call__(self, request: Request, call_next: Any):
         start_time = time()
         response = await call_next(request)

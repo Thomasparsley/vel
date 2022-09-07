@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 
-from vel.config_factory import ConfigFactory
+from vel.config import Config
 
 
 class NoFilesUploadedException(HTTPException):
@@ -20,7 +20,7 @@ class FileDoesNotExistException(HTTPException):
 
 class InvalidAuthenticationError(HTTPException):
     def __init__(self):
-        login_path: str = ConfigFactory().get().LOGIN_PATH
+        login_path = Config.login_path
         super().__init__(
             status_code=302,
             detail="Not authorized",
