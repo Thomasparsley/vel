@@ -1,20 +1,22 @@
 from typing import Any
+from types import ModuleType
+from importlib import import_module
 
 
 class Config:
-    dev: bool = False
+    _module: ModuleType | None = None
 
-    allow_origins: list[str] = []
-    allow_credentials: bool = False
-    allow_methods: list[str] = []
-    allow_headers: list[str] = []
+    @staticmethod
+    def _load_module():
+        """path = os.environ.get("VEL_CONFIG")
+        if not path:
+            raise ValueError"""
 
-    secret_key: str = ""
-    hashids_salt: str = ""
+        Config._module = import_module("web.config")
 
-    database: Any = None
-    database_models: dict[str, list[str]] = {}
+    @staticmethod
+    def get(attribute_name: str) -> Any:
+        if not Config._module:
+            Config._load_module()
 
-    login_path: str = ""
-    user_class: Any = None
-    jwt_token_name: str = ""
+        return getattr(Config._module, attribute_name)

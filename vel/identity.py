@@ -1,6 +1,6 @@
-from typing import Final, Any, NewType, TypeVar
 from calendar import timegm
 from datetime import datetime, timedelta
+from typing import Final, Any, NewType, TypeVar
 
 from fastapi import Cookie
 from jose import JWTError, jwt
@@ -14,83 +14,13 @@ from .exceptions import InvalidAuthenticationError
 
 
 JWT_ALGORITHM: Final = "HS256"
-SECRET_KEY: str = Config.secret_key
-USER_CLASS: type["UserModel"] = Config.user_class
+
 
 UserType = TypeVar("UserType", bound="UserModel")
 RoleType: Final = NewType("RoleType", str)
 PermissionType: Final = NewType("PermissionType", str)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-def create_access_token(
-    user: "UserModel", data: dict[str, Any], expires_delta: timedelta | None = None
-):
-    data["id"] = user.hashed_id
-    payload = data.copy()
-
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
-
-    payload.update({"exp": expire})
-
-    encoded_jtw = jwt.encode(payload, SECRET_KEY, algorithm=JWT_ALGORITHM)
-    return encoded_jtw
-
-
-async def process_jwt_token(
-    token: str | None,
-) -> tuple["UserModel" | None, str | None]:
-    if not token:
-        return (None, None)
-
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[JWT_ALGORITHM])
-    except JWTError:
-        return (None, None)
-
-    hashed_id = payload.get("id")
-    if not hashed_id:
-        return (None, None)
-
-    user = await USER_CLASS.get_with_hashed_id(hashed_id)
-
-    new_token = None
-    if user:
-        now = datetime.utcnow() + timedelta(minutes=5)
-        now = timegm(datetime.utcnow().utctimetuple())
-        exp = payload.get("exp")
-        if not exp:
-            raise ValueError
-
-        if now > exp:
-            new_token = create_access_token(user, payload)
-
-    return (user, new_token)
-
-
-async def try_get_current_user(token: str | None = Cookie(default=None)):
-    user, _ = await process_jwt_token(token)
-    return user
-
-
-async def get_current_user(token: str | None = Cookie(default=None)):
-    user = await try_get_current_user(token)
-    if not user:
-        raise InvalidAuthenticationError
-    return user
-
-
-def authenticate_user(user: "UserModel" | None, password: str | None) -> bool:
-    if not user:
-        return False
-    elif not password:
-        return False
-
-    return user.verify_password(password)
 
 
 def get_password_hash(password: str):
@@ -195,3 +125,72 @@ class Authorization(models.Model):
             return permissions[permission]
 
         return False
+
+
+def create_access_token(
+    user: "UserModel",
+    data: dict[str, Any],
+    expires_delta: timedelta = timedelta(minutes=20),
+):
+    payload = data.copy()
+    payload["id"] = user.hashed_id
+    payload["exp"] = datetime.utcnow() + expires_delta
+
+    SECRET_KEY: str = Config.get("SECRET_KEY")
+    encoded_jtw = jwt.encode(payload, SECRET_KEY, algorithm=JWT_ALGORITHM)
+    return encoded_jtw
+
+
+async def process_jwt_token(
+    token: str | None,
+    reset_token_before_exp: timedelta = timedelta(minutes=10),
+) -> tuple[UserModel | None, str | None]:
+    if not token:
+        return (None, None)
+
+    try:
+        SECRET_KEY: str = Config.get("SECRET_KEY")
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[JWT_ALGORITHM])
+    except JWTError:
+        return (None, None)
+
+    hashed_id = payload.get("id")
+    if not hashed_id:
+        return (None, None)
+
+    USER_CLASS: type["UserModel"] = Config.get("USER_CLASS")
+    user = await USER_CLASS.get_with_hashed_id(hashed_id)
+
+    new_token = None
+    if user:
+        exp: int | None = payload.get("exp")
+        if not exp:
+            raise ValueError
+
+        now = datetime.utcnow() + reset_token_before_exp
+        now = timegm(now.utctimetuple())
+        if now > exp:
+            new_token = create_access_token(user, payload)
+
+    return (user, new_token)
+
+
+async def try_get_current_user(token: str | None = Cookie(default=None)):
+    user, _ = await process_jwt_token(token)
+    return user
+
+
+async def get_current_user(token: str | None = Cookie(default=None)):
+    user = await try_get_current_user(token)
+    if not user:
+        raise InvalidAuthenticationError
+    return user
+
+
+def authenticate_user(user: UserModel | None, password: str | None) -> bool:
+    if not user:
+        return False
+    elif not password:
+        return False
+
+    return user.verify_password(password)

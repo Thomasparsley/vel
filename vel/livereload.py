@@ -23,7 +23,12 @@ class LiveReload:
 
         async def broadcast_json(self, json_message: dict[str, Any]):
             for connection in self.connections:
-                await connection.send_json(json_message)
+                try:
+                    await connection.send_json(json_message)
+                except ConnectionClosed:
+                    pass
+                finally:
+                    self.disconnect(connection)
 
         async def send_personal_json(
             self, websocket: WebSocket, json_message: dict[str, Any]
@@ -68,7 +73,10 @@ class LiveReload:
             except ConnectionClosed:
                 pass
             finally:
-                self.__manager.disconnect(connection)
+                try:
+                    self.__manager.disconnect(connection)
+                except ValueError:
+                    pass
 
     def start(self):
         self.__observer.start()
