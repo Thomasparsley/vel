@@ -1,14 +1,18 @@
-from datetime import datetime
 from os import PathLike
+from datetime import datetime
 from typing import Any, Mapping
 
-from starlette.types import Receive, Scope, Send
-from starlette.background import BackgroundTask
-from starlette.responses import Response
-from fastapi import Request
+import dateutil.tz
 
-import minify_html
+from fastapi import Request
+from starlette.responses import Response
+from starlette.background import BackgroundTask
+from starlette.types import Receive, Scope, Send
+
 import jinja2
+import minify_html
+
+from vel.htmx import HX_RETARGET
 
 
 Context = dict[str, Any]
@@ -19,8 +23,8 @@ class _TemplateResponse(Response):
 
     def __init__(
         self,
-        template: jinja2.Template,
         context: Context,
+        template: jinja2.Template,
         status_code: int = 200,
         headers: Mapping[str, str] | None = None,
         media_type: str | None = None,
@@ -28,6 +32,7 @@ class _TemplateResponse(Response):
     ):
         self.template = template
         self.context = context
+
         content = minify_html.minify(template.render(context))
 
         super().__init__(content, status_code, headers, media_type, background)
@@ -46,6 +51,17 @@ class _TemplateResponse(Response):
         await super().__call__(scope, receive, send)
 
 
+@jinja2.pass_context
+def url_for(context: Context, name: str, **path_params: Any) -> str:
+    request = context["request"]
+    return request.url_for(name, **path_params)
+
+
+@jinja2.pass_context
+def datetime_now(_: Context):
+    return datetime.now(dateutil.tz.gettz("Prague"))
+
+
 class Jinja2Templating:
     def __init__(
         self,
@@ -60,18 +76,10 @@ class Jinja2Templating:
         directory: str | PathLike,  # type: ignore
         **env_options: Any,
     ) -> jinja2.Environment:
-        @jinja2.pass_context
-        def url_for(context: Context, name: str, **path_params: Any) -> str:
-            request = context["request"]
-            return request.url_for(name, **path_params)
-
-        @jinja2.pass_context
-        def datetime_now(context: Context):
-            return datetime.now()
 
         loader = jinja2.FileSystemLoader(directory)
         env_options.setdefault("loader", loader)
-        env_options.setdefault("autoescape", True)
+        env_options.setdefault("autoescape", False)
 
         env = jinja2.Environment(**env_options)
         env.globals["url_for"] = url_for  # type: ignore
@@ -82,22 +90,35 @@ class Jinja2Templating:
     def get_template(self, name: str) -> jinja2.Template:
         return self.env.get_template(name)
 
-    def RenderResponse(
+    async def render_response(
         self,
         request: Request,
+        layout: str | None,
         name: str,
         context: Context,
         status_code: int = 200,
-        headers: Mapping[str, str] | None = None,
+        headers: Mapping[str, str] = {},
         media_type: str | None = None,
         background: BackgroundTask | None = None,
+        is_page: bool = True,
+        is_partial: bool = False,
     ) -> _TemplateResponse:
         context["request"] = request
-        context["user"] = request.user
+
+        if layout:
+            layout = f"layout/{layout}.html"
+            context["layout"] = layout
+
+        if is_page:
+            name = f"page/{name}"
+        name = f"{name}.html"
+
+        if is_partial:
+            headers = {HX_RETARGET: "main", **headers}
 
         return _TemplateResponse(
-            self.get_template(name),
             context,
+            self.get_template(name),
             status_code=status_code,
             headers=headers,
             media_type=media_type,

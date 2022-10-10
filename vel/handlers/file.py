@@ -11,29 +11,35 @@ from ..utils import exist_file
 from ..utils.image import ImageSize, ImageType
 
 
-def image_path(file: FileModel, size: ImageSize, type: ImageType):
+def image_path_maker(path: str, file: str, size: ImageSize, type: ImageType):
+    file_path = pathlib.Path(file)
+
     match (size, type):
         case (ImageSize.DEFAULT, ImageType.DEFAULT):
-            return pathlib.Path(f"./files/{file.filename}")
+            return pathlib.Path(f"{path}/{file}")
 
         case (size, ImageType.DEFAULT):
-            return pathlib.Path(f"./files/{file.filename}-{size}")
+            return pathlib.Path(f"{path}/{file_path.stem}-{size}{file_path.suffix}")
 
         case (ImageSize.DEFAULT, type):
-            return pathlib.Path(f"./files/{file.filename}-{type}")
+            return pathlib.Path(f"{path}/{file_path.stem}.{type}")
 
         case _:
-            return pathlib.Path(f"./files/{file.filename}-{size}-{type}")
+            return pathlib.Path(f"{path}/{file_path.stem}-{size}.{type}")
+
+
+def image_path(file: FileModel, size: ImageSize, type: ImageType):
+    return image_path_maker("./files", file.filename, size, type)
 
 
 async def generate_image(
-    file: FileModel,
+    file: pathlib.Path,
     save_to: pathlib.Path,
     size: ImageSize,
     type: ImageType,
 ):
-    image = Image.open(pathlib.Path(f"./files/{file.filename}"))
-
+    image = Image.open(file)
+    print(save_to)
     px = size.get_px()
     if px:
         image.thumbnail((px, px))
@@ -65,7 +71,9 @@ async def image_handler(file: FileModel, size: ImageSize, type: ImageType):
     file_path = image_path(file, size, type)
 
     if not exist_file(file_path):
-        await generate_image(file, file_path, size, type)
+        await generate_image(
+            pathlib.Path(f"./files/{file.filename}"), file_path, size, type
+        )
 
     return FileResponse(file_path)
 
@@ -77,3 +85,28 @@ async def uploaded_file_handler(file: UploadFile):
 
     async with aiofiles.open(f"./files/{file.filename}", "wb") as writer:
         await writer.write(content)
+
+
+async def static_file_handler(
+    path: str,
+    size: ImageSize = ImageSize.DEFAULT,
+    type: ImageType = ImageType.DEFAULT,
+):
+    file_path = pathlib.Path(f"./static/{path}")
+
+    if not exist_file(file_path):
+        raise FileNotFoundException()
+
+    if size.is_default() and type.is_default():
+        return FileResponse(file_path)
+
+    response_file_path = image_path_maker("./static", path, size, type)
+    if not exist_file(response_file_path):
+        await generate_image(
+            file_path,
+            image_path_maker("./static", path, size, type),
+            size,
+            type,
+        )
+
+    return FileResponse(response_file_path)

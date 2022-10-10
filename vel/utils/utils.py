@@ -1,10 +1,5 @@
-import pathlib
 import importlib
 from typing import Any
-
-
-def exist_file(path: pathlib.Path):
-    return path.is_file()
 
 
 def get_attribute_from_module(module_path: str, attribute_name: str) -> Any:

@@ -28,6 +28,9 @@ class ImageSize(str, Enum):
     XL = "xl"
     XXL = "xxl"
 
+    def is_default(self) -> bool:
+        return self == ImageSize.DEFAULT
+
     def get_px(self) -> int:
         match self:
             case ImageSize.XS:
@@ -55,3 +58,6 @@ class ImageSize(str, Enum):
 class ImageType(str, Enum):
     DEFAULT = ""
     WEBP = "webp"
+
+    def is_default(self) -> bool:
+        return self == ImageType.DEFAULT

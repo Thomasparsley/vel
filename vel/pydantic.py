@@ -2,16 +2,7 @@ from fastapi import Request
 from pydantic import BaseModel as __BaseModel
 from pydantic import ValidationError as _ValidationError
 
-
-class ValidationError(_ValidationError):
-    def to_dict(self):
-        result: dict[str, str] = dict()
-
-        for error in self.errors():
-            location = str(error["loc"][0])
-            result[location] = error["msg"]
-
-        return result
+from .exceptions_pydantic import ValidationError
 
 
 class BaseModel(__BaseModel):
@@ -23,3 +14,12 @@ class BaseModel(__BaseModel):
             return cls(**form)
         except _ValidationError as e:
             raise ValidationError(e.raw_errors, e.model) from e
+
+    def keys(self):
+        keys: list[str] = []
+
+        for key, value in self.dict():
+            if value is not None:
+                keys.append(key)
+
+        return keys

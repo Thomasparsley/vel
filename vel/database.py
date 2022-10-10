@@ -37,6 +37,7 @@ class Database:
         return self.__is_init
 
     async def generate_schemas(self, models: Optional[dict[str, list[str]]] = None):
+
         if not self.is_init:
             if models is None:
                 raise ArgumentError(

@@ -1,6 +1,5 @@
 from fastapi import HTTPException
-
-from vel.config import Config
+from starlette.datastructures import URL
 
 
 class NoFilesUploadedException(HTTPException):
@@ -19,10 +18,6 @@ class FileDoesNotExistException(HTTPException):
 
 
 class InvalidAuthenticationError(HTTPException):
-    def __init__(self):
-        login_path = Config.login_path
-        super().__init__(
-            status_code=302,
-            detail="Not authorized",
-            headers={"Location": login_path},
-        )
+    def __init__(self, current_path: URL):
+        super().__init__(302)
+        self.current_path = current_path.path

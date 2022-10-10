@@ -10,7 +10,6 @@ from passlib.context import CryptContext
 from . import basic_fields
 from .config import Config
 from .hashids import HashidsMixin, Hashids
-from .exceptions import InvalidAuthenticationError
 
 
 JWT_ALGORITHM: Final = "HS256"
@@ -177,13 +176,6 @@ async def process_jwt_token(
 
 async def try_get_current_user(token: str | None = Cookie(default=None)):
     user, _ = await process_jwt_token(token)
-    return user
-
-
-async def get_current_user(token: str | None = Cookie(default=None)):
-    user = await try_get_current_user(token)
-    if not user:
-        raise InvalidAuthenticationError
     return user
 
 
